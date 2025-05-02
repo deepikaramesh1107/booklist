@@ -1,0 +1,154 @@
+<!-- <!DOCTYPE html>
+<html>
+<head>
+    <title>Book List</title>
+</head>
+<body>
+    <h1>Book List</h1>
+    <ul>
+        {% for book in books %}
+            <li>{{ book.title }}</li>
+        {% empty %}
+            <li>No books found.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book List</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Book List</h1>
+    
+    <!-- Button to Create a New Book -->
+    <a href="{% url 'book_create' %}">
+        <button>Create New Book</button>
+    </a>
+    <h3>Filter By</h3>
+
+<!-- Filter by Purchase Type -->
+<form method="get" style="display: inline-block;">
+    {% for pt in purchase_types %}
+        <button type="submit" name="purchase_type" value="{{ pt }}"
+            {% if pt == selected_purchase_type %}style="font-weight: bold;"{% endif %}>
+            {{ pt }}
+        </button>
+    {% endfor %}
+    {% if selected_purchase_type %}
+        <a href="{% url 'book_list' %}"><button type="button">Clear Purchase Type Filter</button></a>
+    {% endif %}
+</form>
+
+<!-- Filter by Tag -->
+<form method="get" style="display: inline-block; margin-left: 20px;">
+    {% for tag in tags %}
+        <button type="submit" name="tag_id" value="{{ tag.id }}"
+            {% if tag.id|stringformat:"s" == selected_tag_id %}style="font-weight: bold;"{% endif %}>
+            {{ tag.name }}
+        </button>
+    {% endfor %}
+    {% if selected_tag_id %}
+        <a href="{% url 'book_list' %}"><button type="button">Clear Tag Filter</button></a>
+    {% endif %}
+</form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Purchase Type</th>
+                <th>Status</th>
+                <th>Rating</th>
+                <th>Started</th>
+                <th>Finished</th>
+                <th>Tags</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in books %}
+            <tr>
+                <td>{{ book.title }}</td>
+                <td>{{ book.purchase_type }}</td>
+                <td>{{ book.status }}</td>
+                <td>{{ book.rating }}</td>
+                <td>{{ book.date_started }}</td>
+                <td>{{ book.date_finished }}</td>
+                <td>
+                    {% for tag in book.booktag_set.all %}
+                        {{ tag.tag.name }}{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                        No tags
+                    {% endfor %}
+                </td>
+                
+                <td class="action-buttons">
+                    <!-- Edit Button -->
+                    <a href="{% url 'book_edit' book.id %}">
+                        <button>Edit</button>
+                    </a>
+                    <!-- Delete Button -->
+                    <form action="{% url 'book_delete' book.id %}" method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" onclick="return confirm('Are you sure you want to delete this book?');">
+                            Delete
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8">No books found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr>
+<h2>Summary Statistics</h2>
+<ul>
+    <li><strong>Average rating:</strong> {{ avg_rating|default:"N/A" }}</li>
+    <li><strong>Last book finished:</strong> {{ last_book.title }} ({{ last_book.date_finished }})</li>
+    <li><strong>Most frequently read type of book (by tag):</strong> {{ most_frequent_tag|default:"N/A" }}</li>
+    <li><strong>Total books bought:</strong> {{ total_bought }}</li>
+    <li><strong>Least favorite book:</strong> 
+        {% if least_favorite %}
+            {{ least_favorite.title }} (Rating: {{ least_favorite.rating }})
+        {% else %}
+            N/A
+        {% endif %}
+    </li>
+    <li><strong>Book that took the least time to finish:</strong> 
+        {% if quickest_book %}
+            {{ quickest_book.title }} ({{ quickest_book.date_started }} → {{ quickest_book.date_finished }})
+        {% else %}
+            N/A
+        {% endif %}
+    </li>
+    <li><strong>Number of friend recs (books borrowed):</strong> {{ borrowed_books }}</li>
+    <li><strong>Books completed (read):</strong> {{ completed_books }}</li>
+</ul>
+</body>
+</html>
+

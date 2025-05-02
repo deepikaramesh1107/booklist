@@ -1,0 +1,17 @@
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  
+  <!-- Open tag creation in a new tab -->
+  <a href="{% url 'tag_create' %}?next={% url 'book_create' %}" target="_blank" onclick="refreshTagsAfterClose()">+ Add New Tag</a>
+  
+  <button type="submit">Save Book</button>
+</form>
+
+<script>
+function refreshTags() {
+  // Refresh the page after a short delay to load new tags
+  setTimeout(() => location.reload(), 1000);
+}
+</script>
+
